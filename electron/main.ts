@@ -1,12 +1,11 @@
 import { app, BrowserWindow, protocol, net } from 'electron'
-import { createRequire } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
 import { registerIpcHandlers } from './ipc/handlers'
 import { logger } from './utils/logger'
 
-const require = createRequire(import.meta.url)
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // The built directory structure
