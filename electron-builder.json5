@@ -43,7 +43,7 @@
   "publish": [
     {
       "provider": "github",
-      "owner": "song",
+      "owner": "461821624",
       "repo": "FrameScript"
     }
   ]
