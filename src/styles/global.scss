@@ -1,0 +1,70 @@
+:root {
+  --bg-color: #f8fafc;
+  --sidebar-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --panel-bg: rgba(255, 255, 255, 0.4);
+  --terminal-bg: #1e293b;
+  --header-height: 48px;
+  --sidebar-width: 240px;
+
+  color-scheme: light;
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--el-text-color-primary);
+  background-color: var(--bg-color);
+}
+
+.dark {
+  --bg-color: #0f172a;
+  --sidebar-bg: rgba(15, 23, 42, 0.8);
+  --glass-bg: rgba(30, 41, 59, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --panel-bg: rgba(15, 23, 42, 0.4);
+  --terminal-bg: #020617;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--bg-color);
+  color: var(--el-text-color-primary);
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#app {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.glass-effect {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(144, 147, 153, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(144, 147, 153, 0.5);
+}
