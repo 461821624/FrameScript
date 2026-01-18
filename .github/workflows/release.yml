@@ -44,6 +44,7 @@ jobs:
           fi
 
       - name: Create git tag
+        shell: bash
         run: |
           git tag v${{ steps.pkg.outputs.version }}
           git push origin v${{ steps.pkg.outputs.version }}
@@ -53,7 +54,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run release
 
-      - name: Create GitHub Release with auto notes
+      - name: Create GitHub Release (auto notes)
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
