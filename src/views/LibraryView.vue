@@ -16,7 +16,11 @@
     </header>
 
     <main class="library-content">
-      <div v-if="projects.length === 0" class="empty-state">
+      <div v-if="loading" class="loading-state">
+        <el-skeleton :rows="3" animated />
+      </div>
+
+      <div v-else-if="projects.length === 0" class="empty-state">
         <el-empty description="暂无历史项目" />
       </div>
 
@@ -44,7 +48,7 @@
 
           <div class="card-footer">
             <el-button size="small" :icon="View" @click="openProject(project)">详情</el-button>
-            <el-button size="small" type="danger" link :icon="Delete">删除</el-button>
+            <el-button size="small" type="danger" link :icon="Delete" @click="deleteProject(project)">删除</el-button>
           </div>
         </el-card>
       </div>
@@ -53,29 +57,85 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Search, Calendar, View, Delete } from '@element-plus/icons-vue';
 
-// Mock data
+interface Project {
+  id: string;
+  title: string;
+  path: string;
+  status: 'idle' | 'processing' | 'completed' | 'error';
+  videos: { id: string; name: string; duration?: number; frames: { file: string }[] }[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface DisplayProject {
+  id: string;
+  title: string;
+  thumbnail: string;
+  duration: string;
+  status: 'completed' | 'pending';
+  createdAt: string;
+}
+
 const searchQuery = ref('');
-const projects = ref([
-  {
-    id: 1,
-    title: '别再瞎剪了！AI 3分钟带你还原博主级 Vlog',
-    thumbnail: 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600',
-    duration: '03:45',
-    status: 'completed',
-    createdAt: '2026-01-17'
-  },
-  {
-    id: 2,
-    title: '我的 2025 年度总结 - 手机随拍系列',
-    thumbnail: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=600',
-    duration: '12:20',
-    status: 'pending',
-    createdAt: '2026-01-16'
+const projects = ref<DisplayProject[]>([]);
+const loading = ref(true);
+
+// Format duration from seconds to MM:SS
+function formatDuration(seconds?: number): string {
+  if (!seconds) return '00:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+// Format timestamp to date string
+function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).replace(/\//g, '-');
+}
+
+// Load projects from backend
+async function loadProjects() {
+  loading.value = true;
+  try {
+    const rawProjects: Project[] = await (window as any).ipcRenderer.invoke('project:list');
+    
+    projects.value = rawProjects.map(p => {
+      // Get first frame as thumbnail, or use placeholder
+      const firstVideo = p.videos[0];
+      const firstFrame = firstVideo?.frames[0];
+      const thumbnail = firstFrame 
+        ? `atom://${p.path}/videos/${firstVideo.id}/${firstFrame.file}`.replace(/\\/g, '/')
+        : 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600';
+
+      // Calculate total duration
+      const totalDuration = p.videos.reduce((acc, v) => acc + (v.duration || 0), 0);
+
+      return {
+        id: p.id,
+        title: p.title || '未命名项目',
+        thumbnail,
+        duration: formatDuration(totalDuration),
+        status: p.status === 'completed' ? 'completed' : 'pending',
+        createdAt: formatDate(p.createdAt)
+      };
+    });
+  } catch (error) {
+    console.error('Failed to load projects:', error);
+  } finally {
+    loading.value = false;
   }
-]);
+}
+
+onMounted(() => {
+  loadProjects();
+});
 
 const filteredProjects = computed(() => {
   return projects.value.filter(p => 
@@ -83,8 +143,26 @@ const filteredProjects = computed(() => {
   );
 });
 
-const openProject = (project: any) => {
-  console.log('Opening project:', project.id);
+const openProject = (project: DisplayProject) => {
+  // Store project ID and navigate to VideoGenView
+  // The VideoGenView will load the project from backend
+  sessionStorage.setItem('loadProjectId', project.id);
+  window.location.hash = '#/videogen';
+};
+
+const deleteProject = async (project: DisplayProject) => {
+  // Confirm deletion
+  const confirmed = window.confirm(`确定要删除项目「${project.title}」吗？此操作不可恢复。`);
+  if (!confirmed) return;
+
+  try {
+    await (window as any).ipcRenderer.invoke('project:delete', { id: project.id });
+    // Refresh the list
+    await loadProjects();
+  } catch (error) {
+    console.error('Failed to delete project:', error);
+    alert('删除失败，请重试');
+  }
 };
 </script>
 

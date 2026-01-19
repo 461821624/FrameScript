@@ -101,7 +101,11 @@ const saveSettings = () => {
 };
 </script>
 
+
+
 <style scoped lang="scss">
+@use "@/styles/mixins.scss" as mix;
+
 .settings-view {
   padding: 8px;
   max-width: 900px;
@@ -109,46 +113,92 @@ const saveSettings = () => {
 
   .settings-header {
     margin-bottom: 32px;
-    h2 { margin: 0; font-size: 24px; font-weight: 700; }
-    p { margin: 8px 0 0; color: var(--el-text-color-secondary); }
+    padding: 0 8px;
+    
+    h2 { 
+      @include mix.text-gradient;
+      margin: 0 0 8px; 
+      font-size: 32px; 
+      font-weight: 800; 
+      font-family: var(--font-heading);
+      letter-spacing: -1px;
+    }
+    
+    p { 
+      margin: 0; 
+      font-size: 16px;
+      color: var(--text-secondary); 
+    }
   }
 
   .settings-section {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 24px;
+    @include mix.glass-panel;
+    @include mix.hover-lift;
+    
+    border-radius: 20px;
+    padding: 32px;
     margin-bottom: 24px;
+    
+    &:hover {
+      box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+    }
 
     .section-title {
-      font-size: 16px;
-      margin: 0 0 20px;
+      font-size: 18px;
+      margin: 0 0 24px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      color: var(--el-color-primary);
+      gap: 12px;
+      color: var(--text-primary);
+      font-family: var(--font-heading);
+      font-weight: 600;
       
-      .el-icon { font-size: 20px; }
+      .el-icon { 
+        font-size: 24px; 
+        color: var(--primary-color);
+        background: rgba(124, 58, 237, 0.1);
+        padding: 6px;
+        border-radius: 8px;
+      }
     }
   }
 
   .form-tip {
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-    margin-top: 4px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    line-height: 1.5;
   }
 
   .form-actions {
-    margin-top: 40px;
+    margin-top: 48px;
     display: flex;
     justify-content: flex-end;
-    gap: 16px;
-    padding-bottom: 40px;
+    gap: 20px;
+    padding-bottom: 60px;
+    
+    .el-button--primary {
+      background: var(--accent-gradient);
+      border: none;
+      height: 48px;
+      padding: 0 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      
+      &:hover {
+        background: var(--accent-gradient-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+      }
+    }
   }
 
   :deep(.el-form-item__label) {
     font-weight: 600;
-    padding-bottom: 8px;
+    padding-bottom: 10px;
+    font-size: 14px;
+    color: var(--text-primary);
   }
 }
 </style>

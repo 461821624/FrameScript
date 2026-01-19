@@ -8,44 +8,22 @@
     </div>
     <div class="window-controls">
       <div class="control-btn" @click="handleMinimize"><el-icon><Minus /></el-icon></div>
-      <div class="control-btn" @click="handleMaximize">
-        <el-icon v-if="isMaximized"><CopyDocument /></el-icon>
-        <el-icon v-else><FullScreen /></el-icon>
-      </div>
       <div class="control-btn close" @click="handleClose"><el-icon><Close /></el-icon></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-
-const isMaximized = ref(false);
 
 const handleMinimize = () => {
   window.ipcRenderer.send('app:minimize');
 };
 
-const handleMaximize = () => {
-  window.ipcRenderer.send('app:maximize');
-};
-
 const handleClose = () => {
   window.ipcRenderer.send('app:close');
 };
-
-const updateMaximizeState = (_event: any, state: boolean) => {
-  isMaximized.value = state;
-};
-
-onMounted(() => {
-  window.ipcRenderer.on('window-maximized', updateMaximizeState);
-});
-
-onUnmounted(() => {
-  window.ipcRenderer.off('window-maximized', updateMaximizeState);
-});
 </script>
+
 
 <style scoped lang="scss">
 .title-bar {
@@ -64,16 +42,23 @@ onUnmounted(() => {
     height: 100%;
     display: flex;
     align-items: center;
-    padding-left: 16px;
+    padding-left: 20px;
     -webkit-app-region: drag;
 
     .app-logo {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
+      gap: 10px;
+      font-weight: 700;
+      color: var(--text-primary);
       -webkit-app-region: no-drag;
+      font-family: var(--font-heading);
+      font-size: 16px;
+      
+      .el-icon {
+        color: var(--primary-color);
+        font-size: 20px;
+      }
     }
   }
 
@@ -89,23 +74,23 @@ onUnmounted(() => {
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      color: var(--el-text-color-regular);
-      transition: background 0.2s, color 0.2s;
+      color: var(--text-secondary);
+      transition: all 0.2s;
 
       &:hover {
-        background: rgba(0, 0, 0, 0.1);
-        color: var(--el-text-color-primary);
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--text-primary);
+        
+        .dark & {
+          background: rgba(255, 255, 255, 0.1);
+        }
       }
 
       &.close:hover {
-        background: #f56c6c;
+        background: #ef4444;
         color: white;
       }
     }
   }
-}
-
-.dark .control-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
 }
 </style>

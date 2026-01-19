@@ -1,29 +1,50 @@
 :root {
-  --bg-color: #f8fafc;
-  --sidebar-bg: rgba(255, 255, 255, 0.7);
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --panel-bg: rgba(255, 255, 255, 0.4);
-  --terminal-bg: #1e293b;
-  --header-height: 48px;
-  --sidebar-width: 240px;
+  /* Dimensions */
+  --header-height: 60px;
+  --sidebar-width: 260px;
+  --border-radius-base: 12px;
+  --border-radius-lg: 16px;
+
+  /* Typography */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Work Sans', sans-serif;
+
+  /* Light Theme */
+  --bg-color: #FAFAFA;
+  --sidebar-bg: rgba(250, 250, 250, 0.85);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --panel-bg: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+
+  /* Brand Colors */
+  --primary-color: #7C3AED;
+  --secondary-color: #06B6D4;
+  --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #6D28D9 0%, #0891B2 100%);
 
   color-scheme: light;
-  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--el-text-color-primary);
-  background-color: var(--bg-color);
 }
 
 .dark {
-  --bg-color: #0f172a;
-  --sidebar-bg: rgba(15, 23, 42, 0.8);
-  --glass-bg: rgba(30, 41, 59, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --panel-bg: rgba(15, 23, 42, 0.4);
-  --terminal-bg: #020617;
+  /* OLED Dark Theme */
+  --bg-color: #050505;
+  --sidebar-bg: rgba(10, 10, 10, 0.85);
+  --glass-bg: rgba(18, 18, 18, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --panel-bg: #121212;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+
   color-scheme: dark;
+}
+
+/* Global Reset & Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
@@ -31,9 +52,11 @@ body {
   padding: 0;
   overflow: hidden;
   background-color: var(--bg-color);
-  color: var(--el-text-color-primary);
-  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  transition: background-color 0.3s, color 0.3s;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s;
 }
 
 #app {
@@ -43,14 +66,45 @@ body {
   flex-direction: column;
 }
 
-.glass-effect {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  transition: background-color 0.3s, border-color 0.3s;
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
-/* Custom Scrollbar */
+/* Glassmorphism Utility */
+.glass-effect {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Element Plus Variable Overrides */
+:root {
+  --el-color-primary: var(--primary-color);
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-bg-color: var(--bg-color);
+  --el-menu-bg-color: transparent;
+  --el-menu-hover-bg-color: rgba(124, 58, 237, 0.1);
+  --el-menu-text-color: var(--text-secondary);
+  --el-menu-active-color: var(--primary-color);
+  --el-border-radius-base: 8px;
+}
+
+.dark {
+  --el-menu-hover-bg-color: rgba(124, 58, 237, 0.2);
+}
+
+/* Modern Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -61,10 +115,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(144, 147, 153, 0.3);
-  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 99px;
+  transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(144, 147, 153, 0.5);
+  background: rgba(148, 163, 184, 0.5);
 }
+
+/* Utilities are now in mixins.scss */
+/* Import them in components using @use "@/styles/mixins.scss" as mixins; */

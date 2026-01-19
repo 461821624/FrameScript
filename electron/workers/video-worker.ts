@@ -31,7 +31,7 @@ port.on('message', async (event: any) => {
                 concurrency,
                 style,
                 onProgress: (progress) => {
-                    console.log('[Worker] Progress update:', progress.stage, progress.message);
+                    console.log(`[Worker] Progress update: Stage ${progress.stage}`);
                     port.postMessage({ type: 'progress', data: progress });
                 }
             });

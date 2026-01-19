@@ -52,6 +52,7 @@ const toggleDark = () => {
 };
 </script>
 
+
 <style scoped lang="scss">
 .sidebar {
   width: var(--sidebar-width);
@@ -60,54 +61,66 @@ const toggleDark = () => {
   flex-direction: column;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--glass-border);
-  transition: width 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
 
   .sidebar-header {
     padding: 24px;
     display: flex;
     align-items: center;
     gap: 12px;
-    border-bottom: 1px solid var(--glass-border);
-
-    .user-info {
-      .username {
-        font-weight: 600;
-        font-size: 14px;
-      }
-      .status {
-        font-size: 12px;
-        color: var(--el-color-success);
-      }
-    }
+    
+    /* Logo text style if present */
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
   }
 
   .sidebar-menu {
     border-right: none;
     flex: 1;
-    padding: 12px 0;
+    padding: 12px 16px;
 
     :deep(.el-menu-item) {
-      margin: 4px 12px;
-      border-radius: 8px;
-      height: 44px;
-      line-height: 44px;
+      margin: 4px 0;
+      border-radius: 12px;
+      height: 48px;
+      line-height: 48px;
+      font-family: var(--font-heading);
+      font-weight: 500;
+      transition: all 0.2s;
+      border: 1px solid transparent;
 
       &:hover {
-        background-color: rgba(var(--el-color-primary-rgb), 0.1);
+        background-color: var(--el-menu-hover-bg-color);
+        transform: translateX(4px);
       }
 
       &.is-active {
-        background-color: var(--el-color-primary);
+        background: var(--accent-gradient);
         color: white;
+        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+        border: none;
+        
+        .el-icon {
+          color: white;
+        }
+      }
+      
+      .el-icon {
+        transition: color 0.2s;
+        font-size: 18px;
       }
     }
   }
 
   .sidebar-footer {
-    padding: 16px;
+    padding: 24px;
     display: flex;
     justify-content: center;
     border-top: 1px solid var(--glass-border);
+    background: linear-gradient(to top, rgba(0,0,0,0.02), transparent);
   }
 }
 </style>

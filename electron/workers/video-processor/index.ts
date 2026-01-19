@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawnUTF8 } from '../../utils/spawn-utf8';
 import * as path from 'path';
 import * as fs from 'fs';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
@@ -50,7 +50,7 @@ export class VideoProcessor {
     /* ---------- utils ---------- */
 
     private spawnFFmpeg(args: string[]) {
-        return spawn(this.ffmpegPath, args, { windowsHide: true });
+        return spawnUTF8(this.ffmpegPath, args);
     }
 
     private async getDuration(): Promise<number> {

@@ -1,7 +1,6 @@
 import log from 'electron-log';
 
 log.transports.file.level = 'info';
-
 export const logger = {
     info: (message: string, ...args: any[]) => log.info(message, ...args),
     error: (message: string, ...args: any[]) => log.error(message, ...args),

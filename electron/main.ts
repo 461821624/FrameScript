@@ -1,9 +1,9 @@
-import { app, BrowserWindow, protocol, net } from 'electron'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { app, BrowserWindow, protocol } from 'electron'
+import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import fs from 'node:fs'
 import { registerIpcHandlers } from './ipc/handlers'
 import { logger } from './utils/logger'
+import { handleAtomProtocol } from './utils/protocol-helper'
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -35,11 +35,11 @@ let win: BrowserWindow | null
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1200,
+    width: 1280,
     height: 800,
-    minWidth: 940,
-    minHeight: 600,
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    resizable: false,
+    maximizable: false,
+    icon: path.join(process.env.VITE_PUBLIC, 'logo.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true,
@@ -84,47 +84,10 @@ app.on('activate', () => {
 })
 
 app.whenReady().then(() => {
-  logger.info('App is ready')
+  logger.info('应用已启动')
 
   // Register custom protocol for local files
-  protocol.handle('atom', (request) => {
-    try {
-      const url = new URL(request.url);
-      let decodedPath = decodeURIComponent(url.pathname);
-      let host = url.host;
-
-      // Robustly reconstruct the absolute path on Windows
-      let p = '';
-      if (process.platform === 'win32') {
-        // Case 1: atom://C:/path -> host is 'c:' or 'c', pathname is '/path'
-        if (host) {
-          p = host;
-          if (!p.includes(':')) p += ':';
-          p += decodedPath;
-        } else {
-          // Case 2: atom:///C:/path -> host is empty, pathname is '/C:/path'
-          p = decodedPath;
-          if (p.startsWith('/')) p = p.substring(1);
-        }
-      } else {
-        // POSIX
-        p = host ? host + decodedPath : decodedPath;
-      }
-
-      const filePath = path.normalize(p);
-      const exists = fs.existsSync(filePath);
-
-      if (!exists) {
-        logger.warn(`[Protocol] 404: ${request.url} -> ${filePath}`);
-        return new Response('File Not Found', { status: 404 });
-      }
-
-      return net.fetch(pathToFileURL(filePath).toString());
-    } catch (error) {
-      logger.error(`[Protocol] Error for ${request.url}:`, error);
-      return new Response('Protocol Error', { status: 500 });
-    }
-  })
+  protocol.handle('atom', handleAtomProtocol)
 
   registerIpcHandlers()
   createWindow()

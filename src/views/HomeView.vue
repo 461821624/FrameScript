@@ -91,145 +91,162 @@ const recentProjects = [
 ];
 </script>
 
+
+
 <style scoped lang="scss">
+@use "@/styles/mixins.scss" as mix;
+
 .welcome-container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 0 60px;
+  padding: 40px 24px 60px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 48px;
 
   .hero-section {
     position: relative;
-    padding: 60px 40px;
-    border-radius: 24px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.03) 100%);
+    padding: 80px 60px;
+    border-radius: 32px;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.6) 0%, rgba(30, 30, 30, 0.4) 100%);
     border: 1px solid var(--glass-border);
     overflow: hidden;
     display: flex;
     align-items: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 
     .dark & {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+      background: linear-gradient(135deg, rgba(12, 12, 12, 0.8) 0%, rgba(20, 20, 20, 0.6) 100%);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     }
 
     .hero-content {
       position: relative;
       z-index: 2;
       flex: 1;
+      max-width: 600px;
 
       .gradient-text {
-        font-size: 56px;
+        @include mix.text-gradient;
+        font-size: 72px;
         font-weight: 800;
-        margin: 0 0 16px;
-        background: linear-gradient(to right, #1e293b, #64748b);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: -1px;
-
-        .dark & {
-          background: linear-gradient(to right, #ffffff, #94a3b8);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
+        margin: 0 0 24px;
+        letter-spacing: -2px;
+        line-height: 1.1;
       }
-
+      
+      // ... hero actions styles
       .subtitle {
-        font-size: 18px;
-        color: var(--el-text-color-secondary);
-        margin-bottom: 40px;
+        font-size: 20px;
+        color: var(--text-secondary);
+        margin-bottom: 48px;
+        line-height: 1.6;
+        font-weight: 400;
       }
 
       .hero-actions {
         display: flex;
-        gap: 16px;
+        gap: 20px;
 
         .action-btn {
-          border-radius: 12px;
-          height: 48px;
-          padding: 0 28px;
+          border-radius: 16px;
+          height: 56px;
+          padding: 0 32px;
           font-weight: 600;
+          font-size: 16px;
+          transition: all 0.3s;
+          border: none;
         }
         
         .primary-btn {
-          box-shadow: 0 4px 15px rgba(var(--el-color-primary-rgb), 0.3);
+          background: var(--accent-gradient);
+          color: white;
+          box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+          
+          &:hover {
+            background: var(--accent-gradient-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5);
+          }
         }
       }
     }
 
+    // ... viz styles
     .hero-viz {
       position: absolute;
-      right: -100px;
-      top: -100px;
-      width: 400px;
-      height: 400px;
+      right: -10%;
+      top: -20%;
+      width: 800px;
+      height: 800px;
       z-index: 1;
+      opacity: 0.6;
+      pointer-events: none;
 
       .viz-blob {
         position: absolute;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
-        filter: blur(40px);
-        animation: rotate 20s linear infinite;
-
-        .dark & {
-          background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
-        }
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+        filter: blur(80px);
+        animation: rotate 25s linear infinite;
       }
 
       .secondary {
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
-        animation: rotate 15s linear infinite reverse;
-
-        .dark & {
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
-        }
+        right: 10%;
+        bottom: 10%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+        animation: rotate 20s linear infinite reverse;
       }
     }
   }
 
   .stat-card {
-    padding: 24px;
-    border-radius: 20px;
-    background: var(--el-bg-color-overlay);
-    border: 1px solid var(--glass-border);
+    @include mix.glass-panel;
+    @include mix.hover-lift;
+    
+    padding: 32px;
+    border-radius: 24px;
     display: flex;
     align-items: center;
-    gap: 20px;
-    transition: transform 0.3s, background-color 0.3s;
-
-    &:hover { transform: translateY(-5px); }
+    gap: 24px;
 
     .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
+      @include mix.flex-center;
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: rgba(124, 58, 237, 0.1);
+      font-size: 28px;
     }
 
     .stat-main {
+      min-width: 0;
+      
       .stat-value {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 700;
-        color: var(--el-text-color-primary);
-        line-height: 1.2;
+        color: var(--text-primary);
+        line-height: 1.1;
+        margin-bottom: 4px;
+        font-family: var(--font-heading);
+        white-space: nowrap;
         
-        .unit { font-size: 14px; font-weight: 400; margin-left: 4px; color: var(--el-text-color-secondary); }
+        .unit { 
+          font-size: 14px; 
+          font-weight: 500; 
+          margin-left: 6px; 
+          color: var(--text-secondary);
+          vertical-align: baseline;
+        }
       }
       .stat-title {
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
-        margin-top: 4px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        white-space: nowrap;
       }
     }
   }
@@ -239,33 +256,55 @@ const recentProjects = [
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      h3 { margin: 0; font-size: 18px; font-weight: 600; }
+      margin-bottom: 24px;
+      
+      h3 { 
+        margin: 0; 
+        font-size: 20px; 
+        font-weight: 600; 
+        color: var(--text-primary);
+      }
     }
 
     .project-strip {
+      @include mix.glass-panel;
+      @include mix.hover-lift;
+      
       display: flex;
       align-items: center;
-      padding: 12px 16px;
-      border-radius: 12px;
-      background: var(--el-bg-color-overlay);
-      border: 1px solid var(--glass-border);
-      margin-bottom: 12px;
-      gap: 16px;
-      transition: background 0.3s;
+      padding: 16px 20px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      gap: 20px;
+      transition: all 0.3s;
+      
+      .dark & {
+         background: rgba(255, 255, 255, 0.02);
+      }
 
-      &:hover { background: rgba(255, 255, 255, 0.06); }
+      &:hover { 
+        border-color: rgba(124, 58, 237, 0.2);
+        .dark & {
+           background: rgba(255, 255, 255, 0.05);
+        }
+      }
 
       .strip-thumb {
-        width: 80px;
-        height: 45px;
-        border-radius: 6px;
+        width: 100px;
+        height: 60px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       }
 
       .strip-info {
         flex: 1;
-        .strip-title { font-size: 14px; font-weight: 500; color: var(--el-text-color-primary); }
-        .strip-time { font-size: 12px; color: var(--el-text-color-secondary); margin-top: 2px; }
+        .strip-title { 
+          font-size: 16px; 
+          font-weight: 600; 
+          color: var(--text-primary); 
+          margin-bottom: 4px;
+        }
+        .strip-time { font-size: 13px; color: var(--text-secondary); }
       }
     }
   }

@@ -98,14 +98,23 @@ export class ProjectManager {
         return project;
     }
 
+
     async listProjects(): Promise<Project[]> {
-        const dirs = await fs.promises.readdir(this.projectsDir);
+        const entries = await fs.promises.readdir(this.projectsDir, { withFileTypes: true });
         const projects: Project[] = [];
-        for (const id of dirs) {
+
+        for (const entry of entries) {
+            // Skip files (like desktop.ini) and only process directories
+            if (!entry.isDirectory()) continue;
+
+            // Check if this directory contains a project.json (is a valid project)
+            const projectJsonPath = path.join(this.projectsDir, entry.name, 'project.json');
+            if (!fs.existsSync(projectJsonPath)) continue;
+
             try {
-                projects.push(await this.loadProject(id));
+                projects.push(await this.loadProject(entry.name));
             } catch (err) {
-                logger.error(`Failed to load project ${id}:`, err);
+                logger.error(`Failed to load project ${entry.name}:`, err);
             }
         }
         return projects;
@@ -114,58 +123,67 @@ export class ProjectManager {
     async updateVideoResult(projectId: string, videoId: string, result: any): Promise<Project> {
         const project = await this.loadProject(projectId);
         const video = project.videos.find(v => v.id === videoId);
+
         if (video && result.metadata) {
-            video.status = 'done';
-            video.progress = 100;
-            video.duration = result.metadata.duration;
-            video.frames = result.metadata.frames.map((f: any) => {
-                const absolutePath = path.join(result.metadata.outputDir, f.file);
-                // Use pathToFileURL to handle special characters and Windows drive letters correctly
-                const url = pathToFileURL(absolutePath).toString().replace('file://', 'atom://');
-                return {
-                    file: f.file,
-                    url,
-                    timestamp: f.time,
-                    score: f.score || 0,
-                    vision: f.vision
-                };
-            });
+            this.updateVideoMetadata(video, result.metadata);
 
             // Persist Script
             if (result.script) {
-                if (!project.script) {
-                    project.script = {
-                        title: '',
-                        hook: '',
-                        segments: [],
-                        ending: '',
-                        hashtags: []
-                    };
-                }
-
-                if (!project.script.title) project.script.title = result.script.title;
-                if (!project.script.hook) project.script.hook = result.script.hook;
-                if (!project.script.ending) project.script.ending = result.script.ending;
-                if (!project.script.hashtags || project.script.hashtags.length === 0) {
-                    project.script.hashtags = result.script.hashtags;
-                }
-
-                // Map segments to the sourceId and replace old ones for this video
-                const newSegments = (result.script.segments || []).map((seg: any) => ({
-                    ...seg,
-                    sourceId: videoId
-                }));
-
-                project.script.segments = [
-                    ...project.script.segments.filter(s => s.sourceId !== videoId),
-                    ...newSegments
-                ];
+                this.mergeProjectScript(project, videoId, result.script);
             }
 
             project.updatedAt = Date.now();
             await this.saveProject(project);
         }
         return project;
+    }
+
+    private updateVideoMetadata(video: VideoAsset, metadata: any) {
+        video.status = 'done';
+        video.progress = 100;
+        video.duration = metadata.duration;
+        video.frames = metadata.frames.map((f: any) => {
+            const absolutePath = path.join(metadata.outputDir, f.file);
+            // Use pathToFileURL to handle special characters and Windows drive letters correctly
+            const url = pathToFileURL(absolutePath).toString().replace('file://', 'atom://');
+            return {
+                file: f.file,
+                url,
+                timestamp: f.time,
+                score: f.score || 0,
+                vision: f.vision
+            };
+        });
+    }
+
+    private mergeProjectScript(project: Project, sourceId: string, scriptData: any) {
+        if (!project.script) {
+            project.script = {
+                title: '',
+                hook: '',
+                segments: [],
+                ending: '',
+                hashtags: []
+            };
+        }
+
+        if (!project.script.title) project.script.title = scriptData.title;
+        if (!project.script.hook) project.script.hook = scriptData.hook;
+        if (!project.script.ending) project.script.ending = scriptData.ending;
+        if (!project.script.hashtags || project.script.hashtags.length === 0) {
+            project.script.hashtags = scriptData.hashtags;
+        }
+
+        // Map segments to the sourceId and replace old ones for this video
+        const newSegments = (scriptData.segments || []).map((seg: any) => ({
+            ...seg,
+            sourceId
+        }));
+
+        project.script.segments = [
+            ...project.script.segments.filter(s => s.sourceId !== sourceId),
+            ...newSegments
+        ];
     }
 
     async updateVideoProgress(projectId: string, videoId: string, updates: Partial<VideoAsset>): Promise<Project> {
@@ -197,6 +215,20 @@ export class ProjectManager {
         project.videos.push(video);
         await this.saveProject(project);
         return video;
+    }
+
+    async deleteProject(projectId: string): Promise<void> {
+        const projectPath = path.join(this.projectsDir, projectId);
+
+        // Remove from cache
+        this.projectsCache.delete(projectId);
+        this.writeQueues.delete(projectId);
+
+        // Delete directory recursively
+        if (fs.existsSync(projectPath)) {
+            await fs.promises.rm(projectPath, { recursive: true, force: true });
+            logger.info(`[ProjectManager] Deleted project: ${projectId}`);
+        }
     }
 }
 

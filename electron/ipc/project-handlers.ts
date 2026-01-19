@@ -17,6 +17,11 @@ export function registerProjectHandlers() {
         return await projectManager.loadProject(id);
     });
 
+    ipcMain.handle('project:delete', async (_, { id }) => {
+        await projectManager.deleteProject(id);
+        return true;
+    });
+
     ipcMain.handle('project:set-output-path', async (_, { path }) => {
         projectManager.setProjectsDir(path);
         return true;

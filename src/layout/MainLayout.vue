@@ -35,12 +35,15 @@ const route = useRoute();
 
 .content-area {
   flex: 1;
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
-  background: rgba(255, 255, 255, 0.2);
+  /* Use a very subtle gradient for the content area to add depth */
+  background: linear-gradient(180deg, var(--bg-color) 0%, rgba(var(--primary-color), 0.02) 100%);
+  position: relative;
   
-  .dark & {
-    background: rgba(0, 0, 0, 0.1);
+  /* Scrollbar refinement */
+  &::-webkit-scrollbar {
+    width: 8px;
   }
 }
 </style>

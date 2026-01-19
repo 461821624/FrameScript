@@ -75,11 +75,41 @@ export const useProjectStore = defineStore('project', () => {
         // Ensure settings are synced before creating a project to respect outputPath
         if (!settingsSynced.value) {
             console.warn('[Store] Waiting for settings sync before project creation...');
-            // In a real scenario, we might want a promise to wait on. 
-            // For now, we'll just proceed but logo it.
         }
         const project = await (window as any).ipcRenderer.invoke('project:create', { title });
         currentProjectId.value = project.id;
+        return project;
+    };
+
+    const loadExistingProject = async (projectId: string) => {
+        const project = await (window as any).ipcRenderer.invoke('project:load', { id: projectId });
+        currentProjectId.value = project.id;
+        projectStatus.value = project.status === 'processing' ? 'processing' :
+            project.status === 'completed' ? 'done' : 'idle';
+        topic.value = project.topic || '';
+
+        // Map videos to sources
+        sources.value = project.videos.map((v: any) => ({
+            id: v.id,
+            name: v.name,
+            path: v.path,
+            size: v.size,
+            duration: v.duration,
+            status: v.status,
+            progress: v.progress || 100,
+            frames: v.frames || [],
+            error: v.error
+        }));
+
+        // Restore script
+        if (project.script) {
+            script.title = project.script.title || '';
+            script.hook = project.script.hook || '';
+            script.segments = project.script.segments || [];
+            script.ending = project.script.ending || '';
+            script.hashtags = project.script.hashtags || [];
+        }
+
         return project;
     };
 
@@ -183,6 +213,7 @@ export const useProjectStore = defineStore('project', () => {
         totalProgress,
         topic,
         initProject,
+        loadExistingProject,
         addSource,
         startProcessing,
         removeSource,

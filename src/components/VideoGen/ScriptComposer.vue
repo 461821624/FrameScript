@@ -182,7 +182,7 @@ const optimizeAll = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--panel-bg);
+  background: transparent;
 
   .composer-sections {
     padding: 24px;
@@ -206,6 +206,10 @@ const optimizeAll = () => {
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+    
+    .el-input, .el-textarea {
+      width: 100%;
+    }
 
     .title-input {
       :deep(.el-input__wrapper) {
@@ -228,12 +232,19 @@ const optimizeAll = () => {
 
   .input-with-actions {
     position: relative;
+    width: 100%;
+    
+    .el-input, .el-textarea {
+      width: 100%;
+    }
+
     .el-button {
       position: absolute;
       right: 8px;
       bottom: 8px;
       opacity: 0.6;
       &:hover { opacity: 1; }
+      z-index: 2; /* Ensure button is on top */
     }
   }
 
