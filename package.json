@@ -1,7 +1,10 @@
 {
   "name": "framescript",
   "description": "An AI-powered video script generation and editing tool",
-  "author": "FrameScript Team",
+   "author": {
+    "name": "Song ShunShun",
+    "email": "461821624@qq.com"
+  },
   "private": true,
   "version": "0.0.5",
   "type": "module",
