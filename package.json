@@ -1,5 +1,7 @@
 {
   "name": "framescript",
+  "description": "An AI-powered video script generation and editing tool",
+  "author": "FrameScript Team",
   "private": true,
   "version": "0.0.5",
   "type": "module",
