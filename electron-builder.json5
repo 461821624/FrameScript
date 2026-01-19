@@ -29,11 +29,10 @@
       }
     ]
   },
-
   "linux": {
     "target": ["AppImage", "deb"],
     "category": "Utility"
-  }
+  },
   "publish": [
     {
       "provider": "github",
