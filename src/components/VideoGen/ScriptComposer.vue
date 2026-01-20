@@ -117,6 +117,19 @@
     </el-scrollbar>
 
     <div class="composer-footer glass-effect">
+      <el-dropdown trigger="click" @command="handleExport">
+        <el-button type="success" plain>
+          <el-icon><Download /></el-icon>
+          导出脚本
+          <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="txt">导出为 TXT 文本</el-dropdown-item>
+            <el-dropdown-item command="srt">导出为 SRT 字幕</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
       <el-button type="primary" :icon="DocumentCopy" plain @click="copyFullScript">
         复制代码
       </el-button>
@@ -134,7 +147,9 @@ import {
   MagicStick, 
   Lock, 
   Unlock, 
-  Rank
+  Rank,
+  Download,
+  ArrowDown
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useProjectStore } from '@/store/project';
@@ -147,9 +162,11 @@ const isSourceProcessing = (sourceId: string) => {
   return source?.status === 'processing';
 };
 
-const getSourceName = (sourceId: string) => {
+const getSourceName = (sourceId: string, maxLength = 20) => {
   const source = projectStore.sources.find(s => s.id === sourceId);
-  return source ? source.name : '未知素材';
+  if (!source) return '未知素材';
+  if (source.name.length <= maxLength) return source.name;
+  return source.name.substring(0, maxLength) + '...';
 };
 
 const removeTag = (tag: string) => {
@@ -170,6 +187,55 @@ const copyFullScript = () => {
   
   navigator.clipboard.writeText(text);
   ElMessage.success('已复制完整脚本');
+};
+
+const handleExport = async (format: string) => {
+  const { title, hook, segments, ending, hashtags } = projectStore.script;
+  
+  let content = '';
+  let filename = `${title || '脚本'}_${Date.now()}`;
+  
+  if (format === 'txt') {
+    // Plain text format
+    const body = segments.map(s => s.text).join('\n\n');
+    content = `【${title}】\n\nHOOK:\n${hook}\n\n正文:\n${body}\n\nENDING:\n${ending}\n\n标签: ${hashtags.map(t => `#${t}`).join(' ')}`;
+    filename += '.txt';
+  } else if (format === 'srt') {
+    // SRT subtitle format
+    content = segments.map((seg, idx) => {
+      const startTime = formatSrtTime(idx * 5); // Placeholder timing
+      const endTime = formatSrtTime((idx + 1) * 5);
+      return `${idx + 1}\n${startTime} --> ${endTime}\n${seg.text}\n`;
+    }).join('\n');
+    filename += '.srt';
+  }
+
+  try {
+    const result = await (window as any).ipcRenderer.invoke('dialog:save-file', {
+      filename,
+      content,
+      filters: format === 'txt' 
+        ? [{ name: '文本文件', extensions: ['txt'] }]
+        : [{ name: 'SRT 字幕', extensions: ['srt'] }]
+    });
+    
+    if (result.success) {
+      ElMessage.success(`已导出到 ${result.path}`);
+    } else if (result.canceled) {
+      // User canceled, do nothing
+    } else {
+      ElMessage.error('导出失败');
+    }
+  } catch (error: any) {
+    ElMessage.error(`导出失败: ${error.message}`);
+  }
+};
+
+const formatSrtTime = (seconds: number) => {
+  const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s},000`;
 };
 
 const optimizeAll = () => {

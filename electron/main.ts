@@ -39,7 +39,7 @@ function createWindow() {
     height: 800,
     resizable: false,
     maximizable: false,
-    icon: path.join(process.env.VITE_PUBLIC, 'logo.svg'),
+    icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true,
@@ -84,7 +84,12 @@ app.on('activate', () => {
 })
 
 app.whenReady().then(() => {
-  logger.info('应用已启动')
+  logger.info('App is ready')
+
+  // Set AppUserModelId for Windows taskbar grouping
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.framescript.app')
+  }
 
   // Register custom protocol for local files
   protocol.handle('atom', handleAtomProtocol)

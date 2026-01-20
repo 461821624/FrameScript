@@ -84,8 +84,6 @@ export const useProjectStore = defineStore('project', () => {
     const loadExistingProject = async (projectId: string) => {
         const project = await (window as any).ipcRenderer.invoke('project:load', { id: projectId });
         currentProjectId.value = project.id;
-        projectStatus.value = project.status === 'processing' ? 'processing' :
-            project.status === 'completed' ? 'done' : 'idle';
         topic.value = project.topic || '';
 
         // Map videos to sources
@@ -95,11 +93,15 @@ export const useProjectStore = defineStore('project', () => {
             path: v.path,
             size: v.size,
             duration: v.duration,
-            status: v.status,
+            status: v.status === 'processing' ? 'done' : v.status, // Reset stale processing status
             progress: v.progress || 100,
             frames: v.frames || [],
             error: v.error
         }));
+
+        // Recalculate project status based on loaded video states
+        const allDone = sources.value.every(s => s.status === 'done' || s.status === 'error');
+        projectStatus.value = allDone ? 'done' : 'idle';
 
         // Restore script
         if (project.script) {
@@ -145,6 +147,13 @@ export const useProjectStore = defineStore('project', () => {
         if (index !== -1) {
             sources.value.splice(index, 1);
             script.segments = script.segments.filter(seg => seg.sourceId !== id);
+        }
+    };
+
+    const removeFrame = (sourceId: string, frameIndex: number) => {
+        const source = sources.value.find(s => s.id === sourceId);
+        if (source && frameIndex >= 0 && frameIndex < source.frames.length) {
+            source.frames.splice(frameIndex, 1);
         }
     };
 
@@ -217,6 +226,7 @@ export const useProjectStore = defineStore('project', () => {
         addSource,
         startProcessing,
         removeSource,
+        removeFrame,
         clearProject,
         setupListeners,
         syncSettings

@@ -79,6 +79,8 @@ const formatDuration = (seconds: number) => {
     display: flex;
     gap: 12px;
     align-items: center;
+    max-width: 200px;
+    text-overflow: ellipsis;
   }
 
   .video-preview {

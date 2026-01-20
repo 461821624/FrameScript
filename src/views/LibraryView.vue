@@ -40,13 +40,28 @@
           </div>
           
           <div class="card-info">
-            <h4 class="project-title">{{ project.title }}</h4>
+            <h4 
+              v-if="editingId !== project.id" 
+              class="project-title" 
+              @dblclick="startEditing(project)"
+              :title="'双击编辑标题'"
+            >{{ project.title }}</h4>
+            <el-input 
+              v-else 
+              v-model="editingTitle" 
+              size="small"
+              class="title-input"
+              @blur="saveTitle(project)"
+              @keyup.enter="saveTitle(project)"
+              ref="titleInputRef"
+            />
             <div class="project-meta">
               <span class="time"><el-icon><Calendar /></el-icon> {{ project.createdAt }}</span>
             </div>
           </div>
 
           <div class="card-footer">
+            <el-button size="small" :icon="Edit" @click="startEditing(project)">重命名</el-button>
             <el-button size="small" :icon="View" @click="openProject(project)">详情</el-button>
             <el-button size="small" type="danger" link :icon="Delete" @click="deleteProject(project)">删除</el-button>
           </div>
@@ -57,8 +72,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { Search, Calendar, View, Delete } from '@element-plus/icons-vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import { Search, Calendar, View, Delete, Edit } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
 
 interface Project {
   id: string;
@@ -79,9 +96,13 @@ interface DisplayProject {
   createdAt: string;
 }
 
+const router = useRouter();
 const searchQuery = ref('');
 const projects = ref<DisplayProject[]>([]);
 const loading = ref(true);
+const editingId = ref<string | null>(null);
+const editingTitle = ref('');
+const titleInputRef = ref<HTMLInputElement | null>(null);
 
 // Format duration from seconds to MM:SS
 function formatDuration(seconds?: number): string {
@@ -144,24 +165,61 @@ const filteredProjects = computed(() => {
 });
 
 const openProject = (project: DisplayProject) => {
-  // Store project ID and navigate to VideoGenView
-  // The VideoGenView will load the project from backend
   sessionStorage.setItem('loadProjectId', project.id);
-  window.location.hash = '#/videogen';
+  router.push('/video-gen');
 };
 
 const deleteProject = async (project: DisplayProject) => {
-  // Confirm deletion
   const confirmed = window.confirm(`确定要删除项目「${project.title}」吗？此操作不可恢复。`);
   if (!confirmed) return;
 
   try {
     await (window as any).ipcRenderer.invoke('project:delete', { id: project.id });
-    // Refresh the list
+    
+    // Clear project from storage if it was the one staged for loading
+    if (sessionStorage.getItem('loadProjectId') === project.id) {
+      sessionStorage.removeItem('loadProjectId');
+    }
+
     await loadProjects();
   } catch (error) {
     console.error('Failed to delete project:', error);
     alert('删除失败，请重试');
+  }
+};
+
+const startEditing = (project: DisplayProject) => {
+  editingId.value = project.id;
+  editingTitle.value = project.title;
+  nextTick(() => {
+    titleInputRef.value?.focus();
+  });
+};
+
+const saveTitle = async (project: DisplayProject) => {
+  if (!editingTitle.value.trim()) {
+    editingTitle.value = project.title;
+    editingId.value = null;
+    return;
+  }
+
+  if (editingTitle.value === project.title) {
+    editingId.value = null;
+    return;
+  }
+
+  try {
+    await (window as any).ipcRenderer.invoke('project:rename', {
+      id: project.id,
+      title: editingTitle.value.trim()
+    });
+    project.title = editingTitle.value.trim();
+    ElMessage.success('项目已重命名');
+  } catch (error) {
+    console.error('Failed to rename project:', error);
+    ElMessage.error('重命名失败');
+  } finally {
+    editingId.value = null;
   }
 };
 </script>

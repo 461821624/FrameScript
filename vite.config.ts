@@ -16,6 +16,7 @@ export default defineConfig({
     alias: {
       '@': path.join(__dirname, 'src'),
       '@electron': path.join(__dirname, 'electron'),
+      '@shared': path.join(__dirname, 'shared'),
     },
   },
   plugins: [

@@ -31,7 +31,7 @@
           </el-form-item>
 
           <el-row :gutter="20">
-            <el-col :span="12">
+            <el-col :span="24">
               <el-form-item label="并发处理数">
                 <el-slider v-model="config.concurrency" :min="1" :max="5" show-input />
               </el-form-item>
@@ -61,7 +61,7 @@
           <h3 class="section-title"><el-icon><MagicStick /></el-icon> 文案风格偏好</h3>
           
           <el-row :gutter="20">
-            <el-col :span="12">
+            <el-col :span="24">
               <el-form-item label="默认语气">
                 <el-radio-group v-model="config.style">
                   <el-radio-button value="professional">纪录 / 专业</el-radio-button>
@@ -177,19 +177,35 @@ const saveSettings = () => {
     gap: 20px;
     padding-bottom: 60px;
     
+    .el-button {
+      height: 40px;
+      padding: 0 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     .el-button--primary {
       background: var(--accent-gradient);
       border: none;
-      height: 48px;
-      padding: 0 32px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.2);
       
       &:hover {
         background: var(--accent-gradient-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(124, 58, 237, 0.4);
+      }
+    }
+
+    .el-button--default {
+      @include mix.glass-panel;
+      color: var(--text-secondary);
+      
+      &:hover {
+        color: var(--text-primary);
+        border-color: var(--primary-accent);
+        transform: translateY(-3px);
       }
     }
   }
@@ -199,6 +215,11 @@ const saveSettings = () => {
     padding-bottom: 10px;
     font-size: 14px;
     color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  :deep(.el-radio-group) {
+    flex-wrap: nowrap;
   }
 }
 </style>

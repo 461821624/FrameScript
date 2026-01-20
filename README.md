@@ -1,94 +1,74 @@
 # FrameScript
 
-FrameScript 是一款基于 AI 的视频内容生成与分析桌面应用程序，采用 Vue 3 + Electron 架构开发。
+<p align="center">
+  <img src="public/logo.png" width="128" height="128" alt="FrameScript Logo">
+</p>
 
-## 🚀 项目概览
+FrameScript 是一款专为视频创作者打造的 **AI 视频编导助手**。它利用先进的多模态大模型技术，深度解析视频素材，自动生成极具创意和叙事价值的视频脚本。
 
-FrameScript 旨在简化视频处理流程，通过集成的 AI 模型（如 Google Gemini）实现视频帧分析、脚本生成以及自动化的内容创作流。
+## ✨ 核心特性
 
-## 🏗️ 项目架构
+- 🎬 **智能视觉分析**：集成 Google Gemini 1.5 Flash，深度理解每一帧画面背后的含义。
+- 📝 **创作流驱动**：从素材导入、AI 抽帧、画面解读到脚本编排，全流程闭环。
+- 📂 **智能项目库**：自动持久化处理历史，支持项目详情复现与高效管理。
+- 💎 **极客级审美**：基于 **OLED 真黑模式** 与 **玻璃拟态 (Glassmorphism)** 设计语言，提供极致的沉浸式创作体验。
 
-项目采用前后端分离的现代化桌面应用架构：
+## 🚀 技术栈
 
-### 1. 前端层 (Renderer Process)
-- **框架**: [Vue 3](https://vuejs.org/) (Composition API)
-- **UI 组件库**: [Element Plus](https://element-plus.org/)
+- **前端**: [Vue 3](https://vuejs.org/) + [Vite](https://vitejs.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **UI 体系**: [Element Plus](https://element-plus.org/) + 自定义 SCSS 设计系统
 - **状态管理**: [Pinia](https://pinia.vuejs.org/)
-- **路由**: [Vue Router](https://router.vuejs.org/)
-- **样式**: SCSS & CSS Variables (支持深色/浅色主题)
+- **桌面框架**: [Electron 30+](https://www.electronjs.org/)
+- **视频底层**: [FFmpeg](https://ffmpeg.org/) (多线程 Worker 架构)
+- **AI 引擎**: Google Gemini (多模态)
 
-### 2. 后端层 (Main Process)
-- **框架**: [Electron](https://www.electronjs.org/)
-- **通信**: 安全的 IPC (Inter-Process Communication) 通道
-- **存储**: 本地文件系统 & 配置管理
-
-### 3. AI 引擎层
-- **核心模型**: Google Gemini 1.5 Flash (通过 `@google/genai` SDK 集成)
-- **功能**: 
-  - 视觉帧分析 (Vision Analysis)
-  - 智能脚本生成 (Script Generation)
-  - 多模态处理支持
-
-### 4. 视频处理系统
-- **底层驱动**: [FFmpeg](https://ffmpeg.org/)
-- **执行环境**: 独立的 Worker 线程，确保 UI 流畅性
-- **工作流**: 场景检测 -> 关键帧提取 -> AI 语义分析
-
-## 📂 项目结构
+## 📂 目录结构
 
 ```text
 FrameScript/
-├── electron/               # Electron 主进程代码
-│   ├── ai/                # AI 客户端及 Prompt 管理
-│   ├── ipc/               # IPC 通信处理
-│   ├── workers/           # 视频处理辅助线程
-│   └── main.ts            # 主进程入口
-├── src/                    # Vue 前端代码
-│   ├── components/        # 公共组件
-│   ├── views/             # 页面视图
-│   ├── store/             # 状态管理
-│   ├── styles/            # 全局样式与主题
-│   └── main.ts            # 渲染进程入口
-├── public/                 # 静态资源
-└── vite.config.ts          # 构建配置
+├── electron/               # Electron 主进程 (Node/OS 交互)
+│   ├── ai/                # AI 模型适配器与 Prompt 工程
+│   ├── ipc/               # 通信网关 (跨进程调用)
+│   ├── workers/           # FFmpeg 视频分析专职线程
+│   └── main.ts            # 主程序入口
+├── src/                    # 渲染进程 (Vue 界面)
+│   ├── components/        # 深度打磨的高端 UI 组件
+│   ├── views/             # 业务视图 (Home/Library/VideoGen)
+│   ├── store/             # 响应式状态中心
+│   └── styles/            # 核心设计系统 (Mixins/Variables)
+├── build/                  # 打包构建配置与图标资源
+└── public/                 # 静态资源入口
 ```
 
-## 🛠️ 使用方法
+## 🛠️ 快速开始
 
-### 环境准备
-- Node.js (建议 v18+)
-- FFmpeg (程序会自动管理，或确保系统已安装)
+### 1. 环境依赖
+- Node.js >= 18.x
+- 稳定的网络环境 (用于 AI 模型访问)
 
-### 1. 安装依赖
+### 2. 开发者模式
 ```bash
+# 安装依赖
 npm install
-```
 
-### 2. 配置环境变量
-在项目根目录或主进程配置中设置您的 AI API Key：
-- 支持 Google Gemini API Key
-
-### 3. 运行开发服务器
-```bash
+# 启动开发环境
 npm run dev
 ```
 
-### 4. 构建应用
+### 3. 应用打包
 ```bash
-# 构建对应的桌面端安装包
-npm run build
+# 构建 Windows 安装包 (.exe)
+npm run build:win
+
+# 构建 MacOS 安装包 (.dmg)
+npm run build:mac
 ```
 
-## ✨ 主要功能
-- 🎞️ **智能抽帧**: 自动识别视频场景，提取最具代表性的画面。
-- 👁️ **画面理解**: 利用 Gemini / Qwen Vision 模型深度解析帧内容。
-- 📝 **脚本生成**: 根据视觉分析结果，自动生成视频文案，支持“创作主题”限定。
-- 🎨 **现代化 UI**: 极致的响应式设计，支持系统级主题切换。
 
-## 📅 路线图 / 待办事项 (TODO)
-- [ ] **视觉依据选项卡**: 增加“移除此帧”功能，允许手动精简分析素材。
-- [ ] **文案编排选项卡**: 增加“智能优化”功能，实现剧本的整体润色与连贯性增强。
-- [ ] **多端适配**: 适配更多分辨率与深色模式细节优化。
+## 🤝 贡献与反馈
 
-## 📝 许可证
-MIT License
+如果您有任何建议或发现 Bug，欢迎提交 Issue。
+
+---
+**FrameScript - 让每一帧叙事更有价值**  
+Developed with ❤️ by **Song ShunShun**

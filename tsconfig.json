@@ -28,6 +28,9 @@
       ],
       "@electron/*": [
         "electron/*"
+      ],
+      "@shared/*": [
+        "shared/*"
       ]
     }
   },
@@ -35,7 +38,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "electron"
+    "electron",
+    "shared"
   ],
   "references": [
     {

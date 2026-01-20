@@ -2,7 +2,7 @@
   <aside class="sidebar glass-effect">
     
     <el-menu
-      default-active="/"
+      :default-active="currentRoute"
       class="sidebar-menu"
       :collapse="isCollapse"
       background-color="transparent"
@@ -19,10 +19,6 @@
       <el-menu-item index="/library">
         <el-icon><Collection /></el-icon>
         <span>素材库</span>
-      </el-menu-item>
-      <el-menu-item index="/ai-tools">
-        <el-icon><MagicStick /></el-icon>
-        <span>AI 工具</span>
       </el-menu-item>
       <el-menu-item index="/settings">
         <el-icon><Setting /></el-icon>
@@ -41,10 +37,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useDark } from '@vueuse/core';
-import { HomeFilled, VideoCamera, Collection, MagicStick, Setting, Sunny, Moon } from '@element-plus/icons-vue';
+import { HomeFilled, VideoCamera, Collection, Setting, Sunny, Moon } from '@element-plus/icons-vue';
 
+const route = useRoute();
+const currentRoute = computed(() => route.path);
 const isCollapse = ref(false);
 const isDark = useDark();
 const toggleDark = () => {

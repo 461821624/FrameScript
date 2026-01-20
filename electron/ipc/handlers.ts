@@ -46,4 +46,28 @@ export function registerIpcHandlers() {
         const win = BrowserWindow.fromWebContents(event.sender);
         win?.close();
     });
+
+    // Save file dialog for script export
+    ipcMain.handle('dialog:save-file', async (event, { filename, content, filters }) => {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        if (!win) return { success: false };
+
+        const result = await dialog.showSaveDialog(win, {
+            defaultPath: filename,
+            filters: filters || [{ name: '所有文件', extensions: ['*'] }],
+            title: '导出脚本'
+        });
+
+        if (result.canceled || !result.filePath) {
+            return { canceled: true };
+        }
+
+        try {
+            const fs = await import('fs/promises');
+            await fs.writeFile(result.filePath, content, 'utf-8');
+            return { success: true, path: result.filePath };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    });
 }

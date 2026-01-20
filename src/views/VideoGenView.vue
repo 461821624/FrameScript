@@ -19,7 +19,7 @@
         >
           {{ projectStore.isGlobalProcessing ? '生产中...' : '生成全部' }}
         </el-button>
-        <el-button @click="projectStore.clearProject" class="clear-btn">清构</el-button>
+        <el-button @click="projectStore.clearProject" class="clear-btn">清空</el-button>
       </div>
     </header>
 
@@ -82,6 +82,7 @@
                     v-for="(frame, index) in source.frames" 
                     :key="index" 
                     :data="frame"
+                    @remove="removeFrame(source.id, index)"
                   />
                 </div>
               </el-collapse-item>
@@ -133,13 +134,15 @@ onMounted(async () => {
   // Check if we should load an existing project from Library
   const loadProjectId = sessionStorage.getItem('loadProjectId');
   if (loadProjectId) {
-    sessionStorage.removeItem('loadProjectId');
     try {
       await projectStore.loadExistingProject(loadProjectId);
-      // Auto-expand all sources
       activeCollapse.value = projectStore.sources.map(s => s.id);
     } catch (error) {
       console.error('Failed to load project:', error);
+      projectStore.clearProject();
+      ElMessage.error('无法加载该项目，可能已被删除或路径无效');
+    } finally {
+      sessionStorage.removeItem('loadProjectId');
     }
   }
 });
@@ -186,6 +189,11 @@ const startGlobalProcessing = async () => {
   } catch (error: any) {
     ElMessage.error(`启动失败: ${error.message}`);
   }
+};
+
+const removeFrame = (sourceId: string, frameIndex: number) => {
+  projectStore.removeFrame(sourceId, frameIndex);
+  ElMessage.success('已移除该帧');
 };
 </script>
 

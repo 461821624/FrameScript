@@ -2,10 +2,18 @@
 {
    "appId": "com.framescript.app",
   "productName": "FrameScript",
+  "icon": "build/logo.svg",
 
   "directories": {
     "output": "release/${version}/${os}"
   },
+  "extraResources": [
+    {
+      "from": "build",
+      "to": "build",
+      "filter": ["**/*"]
+    }
+  ],
 
   "files": [
     "dist/**",
@@ -13,6 +21,7 @@
   ],
 
   "win": {
+    "icon": "build/logo.png",
     "target": [
       {
         "target": "nsis",

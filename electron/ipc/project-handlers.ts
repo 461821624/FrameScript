@@ -27,6 +27,14 @@ export function registerProjectHandlers() {
         return true;
     });
 
+    ipcMain.handle('project:rename', async (_, { id, title }) => {
+        const project = await projectManager.loadProject(id);
+        project.title = title;
+        project.updatedAt = Date.now();
+        await projectManager.saveProject(project);
+        return true;
+    });
+
     ipcMain.handle('video:add', async (_, { projectId, filePath }) => {
         return await projectManager.addVideo(projectId, filePath);
     });

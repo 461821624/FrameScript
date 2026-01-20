@@ -18,11 +18,6 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/LibraryView.vue'),
     },
     {
-        path: '/ai-tools',
-        name: 'ai-tools',
-        component: () => import('../views/AIToolsView.vue'),
-    },
-    {
         path: '/settings',
         name: 'settings',
         component: () => import('../views/SettingsView.vue'),

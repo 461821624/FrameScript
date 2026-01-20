@@ -59,16 +59,39 @@
       </div>
       
       <div class="activity-list">
-        <el-empty v-if="recentProjects.length === 0" description="暂无最近活动" />
+        <el-skeleton v-if="loading" :rows="3" animated />
+        <div v-else-if="recentProjects.length === 0" class="empty-guide-card glass-effect">
+          <div class="guide-icon">🎬</div>
+          <h4>开始您的第一个视频项目</h4>
+          <p>导入视频素材，AI 将自动分析画面并生成专业脚本</p>
+          <el-button type="primary" @click="$router.push('/video-gen')">
+            <el-icon><VideoCamera /></el-icon>
+            立即创建
+          </el-button>
+        </div>
         <div v-else class="project-strip-container">
-          <!-- Short list of items -->
-          <div v-for="p in recentProjects" :key="p.id" class="project-strip glass-effect">
-            <el-image :src="p.thumb" fit="cover" class="strip-thumb" />
+          <div 
+            v-for="p in recentProjects" 
+            :key="p.id" 
+            class="project-strip glass-effect"
+            @click="openProject(p.id)"
+          >
+            <el-image :src="p.thumb" fit="cover" class="strip-thumb">
+              <template #error>
+                <div class="image-placeholder"><el-icon><VideoCamera /></el-icon></div>
+              </template>
+            </el-image>
             <div class="strip-info">
               <div class="strip-title">{{ p.title }}</div>
               <div class="strip-time">{{ p.time }}</div>
             </div>
-            <el-tag size="small" type="success" effect="dark">已生成</el-tag>
+            <el-tag 
+              size="small" 
+              :type="p.status === 'completed' ? 'success' : (p.status === 'processing' ? 'primary' : 'info')" 
+              effect="dark"
+            >
+              {{ p.status === 'completed' ? '已完成' : (p.status === 'processing' ? '处理中' : '待处理') }}
+            </el-tag>
           </div>
         </div>
       </div>
@@ -77,21 +100,93 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { VideoCamera, Collection, Cpu, Timer, Files, ArrowRight } from '@element-plus/icons-vue';
 
-const stats = [
-  { title: '累计处理视频', value: '24', unit: '个', icon: Files, color: '#3b82f6' },
-  { title: 'AI 分析时长', value: '1,420', unit: '分钟', icon: Timer, color: '#10b981' },
-  { title: '节省创作时间', value: '86', unit: '小时', icon: Cpu, color: '#f59e0b' }
-];
+interface Project {
+  id: string;
+  title: string;
+  path: string;
+  status: 'idle' | 'processing' | 'completed' | 'error';
+  videos: { id: string; name: string; duration?: number; frames: { file: string }[] }[];
+  createdAt: number;
+  updatedAt: number;
+}
 
-const recentProjects = [
-  { id: 1, title: '别再瞎剪了！AI 3分钟带你还原博主级 Vlog', time: '2小时前', thumb: 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=200' },
-  { id: 2, title: '我的 2025 年度总结 - 手机随拍系列', time: '昨天 18:30', thumb: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=200' }
-];
+const router = useRouter();
+const projects = ref<Project[]>([]);
+const loading = ref(true);
+
+const fetchProjects = async () => {
+  try {
+    const list = await (window as any).ipcRenderer.invoke('project:list');
+    projects.value = list;
+  } catch (err) {
+    console.error('Failed to fetch projects:', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(fetchProjects);
+
+const stats = computed(() => {
+  let totalVideos = 0;
+  let totalDurationMinutes = 0;
+  
+  projects.value.forEach(p => {
+    totalVideos += p.videos.length;
+    p.videos.forEach(v => {
+      if (v.duration) totalDurationMinutes += v.duration / 60;
+    });
+  });
+
+  // Rough estimation: 1 min video takes 1 hour to edit manually
+  const savedHours = Math.round(totalDurationMinutes * 1.5);
+
+  return [
+    { title: '累计处理视频', value: totalVideos.toString(), unit: '个', icon: Files, color: '#3b82f6' },
+    { title: 'AI 分析时长', value: Math.round(totalDurationMinutes).toLocaleString(), unit: '分钟', icon: Timer, color: '#10b981' },
+    { title: '节省创作时间', value: savedHours.toString(), unit: '小时', icon: Cpu, color: '#f59e0b' }
+  ];
+});
+
+const recentProjects = computed(() => {
+  return [...projects.value]
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .slice(0, 3)
+    .map(p => {
+      // Find first frame for thumbnail
+      let thumb = '';
+      for (const v of p.videos) {
+        if (v.frames && v.frames.length > 0) {
+          thumb = `atom://${p.path}/videos/${v.id}/${v.frames[0].file}`;
+          break;
+        }
+      }
+      
+      // Relative time formatting (simplified)
+      const diff = Date.now() - p.updatedAt;
+      let timeText = '刚刚';
+      if (diff > 86400000) timeText = `${Math.floor(diff / 86400000)}天前`;
+      else if (diff > 3600000) timeText = `${Math.floor(diff / 3600000)}小时前`;
+      else if (diff > 60000) timeText = `${Math.floor(diff / 60000)}分钟前`;
+
+      return {
+        id: p.id,
+        title: p.title,
+        time: timeText,
+        thumb: thumb || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+        status: p.status
+      };
+    });
+});
+const openProject = (id: string) => {
+  sessionStorage.setItem('loadProjectId', id);
+  router.push('/video-gen');
+};
 </script>
-
-
 
 <style scoped lang="scss">
 @use "@/styles/mixins.scss" as mix;
@@ -103,6 +198,15 @@ const recentProjects = [
   display: flex;
   flex-direction: column;
   gap: 48px;
+
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    @include mix.flex-center;
+    color: var(--text-secondary);
+    font-size: 20px;
+  }
 
   .hero-section {
     position: relative;
@@ -277,6 +381,7 @@ const recentProjects = [
       margin-bottom: 16px;
       gap: 20px;
       transition: all 0.3s;
+      cursor: pointer;
       
       .dark & {
          background: rgba(255, 255, 255, 0.02);
@@ -305,6 +410,32 @@ const recentProjects = [
           margin-bottom: 4px;
         }
         .strip-time { font-size: 13px; color: var(--text-secondary); }
+      }
+    }
+
+    .empty-guide-card {
+      text-align: center;
+      padding: 48px 32px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed var(--glass-border);
+
+      .guide-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+
+      h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px;
+        color: var(--text-primary);
+      }
+
+      p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0 0 24px;
       }
     }
   }
